@@ -7,24 +7,25 @@
 #include "frameExtractUtil.cpp"
 #include "domeDatum.hpp"
 
-std::pair<bool, std::vector<std::vector<bool>>> openRawFiles(const int numberCameras = 480)
+std::pair<bool, std::vector<std::vector<bool>>> openRawFiles(
+    const std::string& cameraSamplingInfoFolder, const int numberCameras = 480)
 {
     std::vector<std::vector<bool>> bValidCamChecker(20);
-    printf("numberCameras: %d\n", numberCameras); // E.g., numberCameras = 140
-    // Generate camera sampling info
-    // const char* cameraSamplingInfoFolder = "/media/posefs1b/Users/hanbyulj/cameraSamplingInfo";
-    const char* cameraSamplingInfoFolder = "/media/posefs1b/Users/hanbyulj/cameraSamplingInfo_furthest";
+    // // Generate camera sampling info
+    // // const char* cameraSamplingInfoFolder = "/media/posefs1b/Users/hanbyulj/cameraSamplingInfo";
+    // const char* cameraSamplingInfoFolder = "/media/posefs1b/Users/hanbyulj/cameraSamplingInfo_furthest";
 
     char camSamplingInfo[512];
-    sprintf(camSamplingInfo,"%s/vga_camNames_%03d.txt",cameraSamplingInfoFolder,numberCameras);
-    printf("## CameraSamplingInfoFile: %s\n",camSamplingInfo);
+    sprintf(camSamplingInfo, "%s/vga_camNames_%03d.txt", cameraSamplingInfoFolder.c_str(), numberCameras);
+    printf("## CameraSamplingInfoFile: %s\n", camSamplingInfo);
     std::ifstream fin(camSamplingInfo);
 
     for (auto panelIdx = 0u ; panelIdx < bValidCamChecker.size() ; panelIdx++)
         bValidCamChecker[panelIdx].resize(24,false);
     if (fin.is_open()==false)
     {
-        printf("Error: cannot find vga camera sampling info\n");
+        op::error("Cannot find VGA camera sampling info in the following folder (does it exist? Can you ls it from"
+                  " the terminal?):\n" + cameraSamplingInfoFolder, __LINE__, __FUNCTION__, __FILE__);
         return std::make_pair(false, bValidCamChecker);
     }
     else
@@ -45,7 +46,7 @@ bool extractRawImgs(
     std::vector<cv::Mat>& imgVect, std::vector<int>& camIdxVect, VGAPanelInfo& mVgaPanelInfo, int& frameIdx,
     int& panelIdx, int& firstTC, int& prevPanelIdx, const int frameStartIdx, const int frameEndIdx, const int panelEnd,
     const std::string& rawFileNameString, const std::string& rawDir, const std::string& write_txt,
-    const std::vector<std::vector<bool>>& bValidCamChecker)
+    const std::vector<std::vector<bool>>& bValidCamChecker, const bool printVerbose)
 {
     imgVect.clear();
     camIdxVect.clear();
@@ -61,7 +62,8 @@ bool extractRawImgs(
 
             char rawFileName[256];
             sprintf(rawFileName, "%s/vga/ve%02d/%s", rawDir.c_str(), panelIdx, rawFileNameString.c_str());
-            printf("rawFileName: %s\n",rawFileName);
+            if (printVerbose)
+                printf("rawFileName: %s\n", rawFileName);
 
             mVgaPanelInfo.m_fp = fopen(rawFileName,"r");
             if (mVgaPanelInfo.m_fp==NULL)
@@ -69,11 +71,13 @@ bool extractRawImgs(
                 printf("Failed in opening %s\n",rawFileName);
                 continue;
             }
-            printf("success: open raw file\n");
+            if (printVerbose)
+                printf("Success: open raw file\n");
             prevPanelIdx = panelIdx;
             frameIdx = frameStartIdx;
             firstTC = ConvFrameToTC_vga(mVgaPanelInfo.m_fp,0);
-            printf("firstTC: %d\n",firstTC);
+            if (printVerbose)
+                printf("FirstTC: %d\n",firstTC);
         }
 
         for ( ; frameIdx <= frameEndIdx ; frameIdx++)
@@ -131,12 +135,15 @@ class WUserInput : public op::WorkerProducer<std::shared_ptr<std::vector<std::sh
 {
 public:
     WUserInput(
-        const int numberCameras, const std::string rawDirectory, const int frameFirst,
-        const int frameLast, const int panelStart, const int panelEnd, const std::string writeTxt) :
+        const int numberCameras, const std::string& rawDirectory, const int frameFirst,
+        const int frameLast, const int panelStart, const int panelEnd, const std::string& cameraSamplingInfoFolder,
+        const std::string& writeTxt, const bool printVerbose) :
+        mPrintVerbose{printVerbose},
         mFrameFirst{frameFirst},
         mFrameLast{frameLast},
         mPanelEnd{panelEnd},
         mRawDirectory{rawDirectory},
+        mCameraSamplingInfoFolder{cameraSamplingInfoFolder},
         mWriteTxt{writeTxt},
         mPanelCurrent{panelStart},
         mFrameCurrent{mFrameFirst},
@@ -145,17 +152,14 @@ public:
     {
         try
         {
-            printf("numberCameras: %d\n",numberCameras);
+            printf("numberCameras: %d\n",numberCameras); // E.g., numberCameras = 140
 
             bool validCamChecker;
-            std::tie(validCamChecker, mBValidCamChecker) = openRawFiles(numberCameras);
+            std::tie(validCamChecker, mBValidCamChecker) = openRawFiles(mCameraSamplingInfoFolder, numberCameras);
             if (!validCamChecker)
             {
                 printf("!validCamChecker");
-                // global.quit_threads = true;
-                // printf("getFrameFromCam finished earlier.\n");
                 op::error("getFrameFromCam finished earlier.\n", __LINE__, __FUNCTION__, __FILE__);
-                // return nullptr;
             }
 
             if (!mRawDirectory.empty())
@@ -186,32 +190,24 @@ public:
             {
                 if (extractRawImgs(
                         mImgVect, mCamIdxVect, mVgaPanelInfo, mFrameCurrent, mPanelCurrent, mFirstTC, mPrevPanelIdx,
-                        mFrameFirst, mFrameLast, mPanelEnd, mRawFileName, mRawDirectory, mWriteTxt, mBValidCamChecker)
+                        mFrameFirst, mFrameLast, mPanelEnd, mRawFileName, mRawDirectory, mWriteTxt, mBValidCamChecker,
+                        mPrintVerbose)
                     ==false)
                 {
-                    printf("No more images, closing software...\n");
+                    op::log("No more images, closing software...", op::Priority::High);
                     this->stop();
                     return nullptr;
                 }
                 mImgIdx = 0u;
             }
 
-            printf("check: %d vs %d\n", (int)mImgVect.size(), (int)mCamIdxVect.size());
-            printf("mImgIdx: %d\n", mImgIdx);
-
-            // // Copy to new Datum
-            // cv::Mat image_uchar = mImgVect[mImgIdx];
-            // Frame f;
-            // if (!image_uchar.empty())
-            // {
-            //     f.index = mGlobalCounter++;
-            //     f.video_frame_number = global.uistate.current_frame;
-            //     f.panelIdx = mPanelCurrent;
-
-            //     f.camIdx = mCamIdxVect[mImgIdx];
-            //     // f.camIdx = mImgIdx+1;
-            // }
-            // mImgIdx++;
+            if (mImgVect.size() != mCamIdxVect.size())
+            {
+                op::error("Check failed (mImgVect.size() == mCamIdxVect.size()): " + std::to_string(mImgVect.size())
+                          + " vs " + std::to_string(mCamIdxVect.size()), __LINE__, __FUNCTION__, __FILE__);
+            }
+            if (mPrintVerbose)
+                printf("mImgIdx: %d\n", mImgIdx);
 
             // Create new datum
             auto datumsPtr = std::make_shared<std::vector<std::shared_ptr<DomeDatum>>>();
@@ -221,8 +217,7 @@ public:
 
             // Fill datum
             datumPtr->cvInputData = mImgVect[mImgIdx];
-            // datumPtr->index = mGlobalCounter++;
-            datumPtr->frameNumber = mFrameCurrent-1; // datumPtr->video_frame_number = mFrameCurrent-1;
+            datumPtr->frameNumber = mFrameCurrent-1;
             datumPtr->panelIdx = mPanelCurrent;
             datumPtr->camIdx = mCamIdxVect[mImgIdx];
             mImgIdx++;
@@ -230,47 +225,11 @@ public:
             // If empty frame -> return nullptr
             if (datumPtr->cvInputData.empty())
             {
-                op::log("Empty frame detected on path: " + mImageFiles.at(mCounter-1) + ". Closing program.",
-                    op::Priority::High);
-                this->stop();
+                op::log("Empty frame detected. Ignoring frame.", op::Priority::High);
                 datumsPtr = nullptr;
             }
 
             return datumsPtr;
-
-            // // ORIGINAL DEMO CODE
-            // // Close program when empty frame
-            // if (mImageFiles.size() <= mCounter)
-            // {
-            //     op::log("Last frame read and added to queue. Closing program after it is processed.",
-            //             op::Priority::High);
-            //     // This funtion stops this worker, which will eventually stop the whole thread system once all the
-            //     // frames have been processed
-            //     this->stop();
-            //     return nullptr;
-            // }
-            // else
-            // {
-            //     // Create new datum
-            //     auto datumsPtr = std::make_shared<std::vector<std::shared_ptr<DomeDatum>>>();
-            //     datumsPtr->emplace_back();
-            //     auto& datumPtr = datumsPtr->at(0);
-            //     datumPtr = std::make_shared<DomeDatum>();
-
-            //     // Fill datum
-            //     datumPtr->cvInputData = cv::imread(mImageFiles.at(mCounter++));
-
-            //     // If empty frame -> return nullptr
-            //     if (datumPtr->cvInputData.empty())
-            //     {
-            //         op::log("Empty frame detected on path: " + mImageFiles.at(mCounter-1) + ". Closing program.",
-            //             op::Priority::High);
-            //         this->stop();
-            //         datumsPtr = nullptr;
-            //     }
-
-            //     return datumsPtr;
-            // }
         }
         catch (const std::exception& e)
         {
@@ -281,10 +240,12 @@ public:
     }
 
 private:
+    const bool mPrintVerbose;
     const int mFrameFirst;
     const int mFrameLast;
     const int mPanelEnd;
     const std::string mRawDirectory;
+    const std::string mCameraSamplingInfoFolder;
     const std::string mWriteTxt;
     int mPanelCurrent;
     int mFrameCurrent;
@@ -296,10 +257,6 @@ private:
     VGAPanelInfo mVgaPanelInfo;
     std::string mRawFileName;
     std::vector<std::vector<bool>> mBValidCamChecker;
-
-    // Old
-    const std::vector<std::string> mImageFiles;
-    unsigned long long mCounter;
 };
 
 #endif // OPENPOSE_EXAMPLES_DOME_W_USER_INPUT_HPP

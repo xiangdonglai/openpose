@@ -17,59 +17,27 @@
 #include "wUserOutput.hpp"
 
 // Custom OpenPose flags
-// Producer
-DEFINE_string(image_dir,                "examples/media/",
-    "Process a directory of images. Read all standard formats (jpg, png, bmp, etc.).");
-// Display
-DEFINE_bool(no_display,                 false,
-    "Enable to disable the visual display.");
 // Dome input
-DEFINE_uint64(frame_first,              0,
+DEFINE_bool(print_verbose, false,
+    "Enable or disable some extra command line verbose output. If, you might also want to add the flag: `--logtostderr`");
+DEFINE_uint64(frame_first, 0,
     "Start on desired frame number. Indexes are 0-based, i.e., the first frame has index 0.");
-DEFINE_uint64(frame_last,               -1,
+DEFINE_uint64(frame_last, -1,
     "Finish on desired frame number. Select -1 to disable. Indexes are 0-based, e.g., if set to"
     " 10, it will process 11 frames (0-10).");
 DEFINE_int32(panel_start, 1,
-             "Panel start index");
+    "Panel start index");
 DEFINE_int32(panel_end, 1,
-             "Panel end index");
+    "Panel end index");
 DEFINE_int32(cam_sampleNum, 480,
-             "Write joint data with json format as prefix%06d.json");
+    "Write joint data with json format as prefix%06d.json");
 DEFINE_string(rawDir, "",
-              "Use a raw files");
+    "Use a raw files");
+DEFINE_string(cameraSamplingInfoFolder, "/media/posefs1b/Users/hanbyulj/cameraSamplingInfo_furthest",
+    "VGA camera sampling info. It was a hard-coded value introduced by Hanbyul Joo inside the code. Not sure what it does.");
 // Dome output
 DEFINE_string(write_txt, "",
-              "Write joint data with json format as prefix%06d.json");
-
-// // This worker will just invert the image
-// class WUserPostProcessing : public op::Worker<std::shared_ptr<std::vector<std::shared_ptr<DomeDatum>>>>
-// {
-// public:
-//     WUserPostProcessing()
-//     {
-//         // User's constructor here
-//     }
-
-//     void initializationOnThread() {}
-
-//     void work(std::shared_ptr<std::vector<std::shared_ptr<DomeDatum>>>& datumsPtr)
-//     {
-//         // User's post-processing (after OpenPose processing & before OpenPose outputs) here
-//             // datumPtr->cvOutputData: rendered frame with pose or heatmaps
-//             // datumPtr->poseKeypoints: Array<float> with the estimated pose
-//         try
-//         {
-//             if (datumsPtr != nullptr && !datumsPtr->empty())
-//                 for (auto& datumPtr : *datumsPtr)
-//                     cv::bitwise_not(datumPtr->cvOutputData, datumPtr->cvOutputData);
-//         }
-//         catch (const std::exception& e)
-//         {
-//             this->stop();
-//             op::error(e.what(), __LINE__, __FUNCTION__, __FILE__);
-//         }
-//     }
-// };
+    "Write joint data with json format as prefix%06d.json");
 
 void configureWrapper(op::WrapperT<DomeDatum>& opWrapperT)
 {
@@ -118,18 +86,13 @@ void configureWrapper(op::WrapperT<DomeDatum>& opWrapperT)
         // Frames producer (e.g., video, webcam, ...)
         auto wUserInput = std::make_shared<WUserInput>(
             FLAGS_cam_sampleNum, FLAGS_rawDir, FLAGS_frame_first, FLAGS_frame_last, FLAGS_panel_start, FLAGS_panel_end,
-            FLAGS_write_txt);
-        // // Processing
-        // auto wUserPostProcessing = std::make_shared<WUserPostProcessing>();
+            FLAGS_cameraSamplingInfoFolder, FLAGS_write_txt, FLAGS_print_verbose);
         // GUI (Display)
         auto wUserOutput = std::make_shared<WUserOutput>(poseModel, FLAGS_write_txt);
 
         // Add custom input
         const auto workerInputOnNewThread = false;
         opWrapperT.setWorker(op::WorkerType::Input, wUserInput, workerInputOnNewThread);
-        // // Add custom processing
-        // const auto workerProcessingOnNewThread = false;
-        // opWrapperT.setWorker(op::WorkerType::PostProcessing, wUserPostProcessing, workerProcessingOnNewThread);
         // Add custom output
         const auto workerOutputOnNewThread = true;
         opWrapperT.setWorker(op::WorkerType::Output, wUserOutput, workerOutputOnNewThread);
@@ -167,10 +130,10 @@ void configureWrapper(op::WrapperT<DomeDatum>& opWrapperT)
             FLAGS_write_video_with_audio, FLAGS_write_heatmaps, FLAGS_write_heatmaps_format, FLAGS_write_video_3d,
             FLAGS_write_video_adam, FLAGS_write_bvh, FLAGS_udp_host, FLAGS_udp_port};
         opWrapperT.configure(wrapperStructOutput);
-// GUI (comment or use default argument to disable any visual output)
-const op::WrapperStructGui wrapperStructGui{
-    op::flagsToDisplayMode(FLAGS_display, FLAGS_3d), !FLAGS_no_gui_verbose, FLAGS_fullscreen};
-opWrapperT.configure(wrapperStructGui);
+        // GUI (comment or use default argument to disable any visual output)
+        const op::WrapperStructGui wrapperStructGui{
+            op::flagsToDisplayMode(FLAGS_display, FLAGS_3d), !FLAGS_no_gui_verbose, FLAGS_fullscreen};
+        opWrapperT.configure(wrapperStructGui);
         // No GUI. Equivalent to: opWrapper.configure(op::WrapperStructGui{});
         // Set to single-thread (for sequential processing and/or debugging and/or reducing latency)
         if (FLAGS_disable_multi_thread)
