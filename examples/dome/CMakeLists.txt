@@ -1,5 +1,7 @@
 set(EXAMPLE_FILES
-    1_dome_input_and_output.cpp)
+    1_dome_input_and_output.cpp
+    poseResultMerger.cpp
+    poseResultMerger_hd.cpp)
 
 include(${CMAKE_SOURCE_DIR}/cmake/Utils.cmake)
 

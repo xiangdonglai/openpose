@@ -1,5 +1,8 @@
 #pragma once
 
+#ifndef FRAME_EXTRACT_UTIL_HPP
+#define FRAME_EXTRACT_UTIL_HPP
+
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <stdio.h>
@@ -84,4 +87,4 @@ bool imageExtraction_hd(CameraInfo& camInfo,int frameIdxInRawFile
 void imageExtraction_kinect(CameraInfo& camInfo,const char* outputFileName,int frameIdxInRawFile
                             ,bool bUndist=false);   //distortion related);
 
-
+#endif

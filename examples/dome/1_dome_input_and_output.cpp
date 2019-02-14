@@ -18,23 +18,22 @@
 
 // Custom OpenPose flags
 // Dome input
-DEFINE_bool(print_verbose, false,
-    "Enable or disable some extra command line verbose output. If, you might also want to add the flag: `--logtostderr`");
-DEFINE_uint64(frame_first, 0,
-    "Start on desired frame number. Indexes are 0-based, i.e., the first frame has index 0.");
-DEFINE_uint64(frame_last, -1,
-    "Finish on desired frame number. Select -1 to disable. Indexes are 0-based, e.g., if set to"
-    " 10, it will process 11 frames (0-10).");
-DEFINE_int32(panel_start, 1,
-    "Panel start index");
-DEFINE_int32(panel_end, 1,
-    "Panel end index");
-DEFINE_int32(cam_sampleNum, 480,
-    "Write joint data with json format as prefix%06d.json");
-DEFINE_string(rawDir, "",
-    "Use a raw files");
+DEFINE_int32(dome_mode,     1, "1 for VGA, 2 for HD cameras.");
+DEFINE_bool(print_verbose,  false, "Enable or disable some extra command line verbose output. If, you might also want"
+                                   " to add the flag: `--logtostderr`");
+DEFINE_uint64(frame_first,  0, "Start on desired frame number. Indexes are 0-based, i.e., the first frame has index 0.");
+DEFINE_uint64(frame_last,   -1, "Finish on desired frame number. Select -1 to disable. Indexes are 0-based, e.g., if"
+                                " set to 10, it will process 11 frames (0-10).");
+DEFINE_string(rawDir,       "", "Use a raw files");
 DEFINE_string(cameraSamplingInfoFolder, "/media/posefs1b/Users/hanbyulj/cameraSamplingInfo_furthest",
     "VGA camera sampling info. It was a hard-coded value introduced by Hanbyul Joo inside the code. Not sure what it does.");
+// VGA-only
+DEFINE_int32(panel_start,   1, "Panel start index (only for VGA)");
+DEFINE_int32(panel_end,     1, "Panel end index (only for VGA)");
+DEFINE_int32(cam_sampleNum, 480, "Write joint data with json format as prefix%06d.json (only for VGA)");
+// HD-only
+DEFINE_int32(cam_start,     0, "HD camera start index (only for HD)");
+DEFINE_int32(cam_end,       0, "HD camera end index (only for HD)");
 // Dome output
 DEFINE_string(write_txt, "",
     "Write joint data with json format as prefix%06d.json");
@@ -84,11 +83,19 @@ void configureWrapper(op::WrapperT<DomeDatum>& opWrapperT)
 
         // Initializing the user custom classes
         // Frames producer (e.g., video, webcam, ...)
-        auto wUserInput = std::make_shared<WUserInput>(
-            FLAGS_cam_sampleNum, FLAGS_rawDir, FLAGS_frame_first, FLAGS_frame_last, FLAGS_panel_start, FLAGS_panel_end,
-            FLAGS_cameraSamplingInfoFolder, FLAGS_write_txt, FLAGS_print_verbose);
+        std::shared_ptr<op::WorkerProducer<std::shared_ptr<std::vector<std::shared_ptr<DomeDatum>>>>> wUserInput;
+        if (FLAGS_dome_mode == 1)
+            wUserInput = std::make_shared<WUserInputVga>(
+                FLAGS_cam_sampleNum, FLAGS_rawDir, FLAGS_frame_first, FLAGS_frame_last, FLAGS_panel_start,
+                FLAGS_panel_end, FLAGS_cameraSamplingInfoFolder, FLAGS_write_txt, FLAGS_print_verbose);
+        else if (FLAGS_dome_mode == 2)
+            wUserInput = std::make_shared<WUserInputHd>(
+                FLAGS_rawDir, FLAGS_frame_first, FLAGS_frame_last, FLAGS_write_txt, FLAGS_cam_start,
+                FLAGS_cam_end, FLAGS_print_verbose);
+        else
+            op::error("Unknown `--dome_mode`.", __LINE__, __FUNCTION__, __FILE__);
         // GUI (Display)
-        auto wUserOutput = std::make_shared<WUserOutput>(poseModel, FLAGS_write_txt);
+        auto wUserOutput = std::make_shared<WUserOutput>(poseModel, FLAGS_write_txt, FLAGS_dome_mode);
 
         // Add custom input
         const auto workerInputOnNewThread = false;

@@ -5,7 +5,9 @@ set(SOURCES_OP_UTILITIES
     keypoint.cpp
     openCv.cpp
     profiler.cpp
-    string.cpp)
+    string.cpp
+    frameExtractUtil.cpp
+    syncManager.cpp)
 
 include(${CMAKE_SOURCE_DIR}/cmake/Utils.cmake)
 prepend(SOURCES_OP_UTILITIES_WITH_CP ${CMAKE_CURRENT_SOURCE_DIR} ${SOURCES_OP_UTILITIES})

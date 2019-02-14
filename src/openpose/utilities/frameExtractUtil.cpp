@@ -1,4 +1,4 @@
-#include "frameExtractUtil.hpp"
+#include <openpose/utilities/frameExtractUtil.hpp>
 #include <fstream>
 #include <omp.h>
 #include <sys/stat.h>       //for mkdir
@@ -10,8 +10,8 @@
 #define __int64 int64
 #endif
 
-#include "pfcmu_config.hpp"
-//#include "SyncManager.h"
+#include <openpose/utilities/pfcmu_config.hpp>
+// #include "SyncManager.hpp"
 
 
 #ifndef SYNCMANAGER_H

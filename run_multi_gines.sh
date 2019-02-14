@@ -25,32 +25,32 @@ rm -rf $saveFolder
 
 
 
-rawFolder=/media/posefs5a/Captures/SocialGames
-datasetName=160226_ultimatum1
-
-# saveFolder=/media/posefs11b/Processed/specialEvents
-mkdir -p $saveFolder
-startIdx=4698;
-startEnd=4700;
-# camNum=480;
-camNum=10;
-./peakdetect_vga_raw_arg.sh $rawFolder/$datasetName $saveFolder/${datasetName}/body_mpm $startIdx $startEnd $camNum
-# echo ./vga_merger_arg.sh $saveFolder/$datasetName heatmaps_org/vga_25 poseDetect_pm_org/vga_25 $startIdx $startEnd
-# ./vga_merger_arg.sh $saveFolder/${datasetName}/body_mpm heatmaps_org/vga_25 poseDetect_mpm_org/vga_25 $startIdx $startEnd &
-# echo "" > $saveFolder/$datasetName/done_pose_org.log
-
-
-
-
-
 # rawFolder=/media/posefs5a/Captures/SocialGames
 # datasetName=160226_ultimatum1
 
 # # saveFolder=/media/posefs11b/Processed/specialEvents
 # mkdir -p $saveFolder
-# startIdx=3698;
-# startEnd=3700;
-# ./peakdetect_hd_raw_arg.sh $rawFolder/$datasetName $saveFolder/${datasetName}/body_mpm $startIdx $startEnd
-# # echo ./hd_merger_arg.sh $saveFolder/$datasetName heatmaps_org/hd_30 poseDetect_pm_org/hd_30 $startIdx $startEnd
-# # ./hd_merger_arg.sh $saveFolder/${datasetName}/body_mpm heatmaps_org/hd_30 poseDetect_mpm_org/hd_30 $startIdx $startEnd 
-# # echo "" > $saveFolder/$datasetName/done_pose_hd_org.log
+# startIdx=4698;
+# startEnd=4700;
+# # camNum=480;
+# camNum=10;
+# ./peakdetect_vga_raw_arg.sh $rawFolder/$datasetName $saveFolder/${datasetName}/body_mpm $startIdx $startEnd $camNum
+# # echo ./vga_merger_arg.sh $saveFolder/$datasetName heatmaps_org/vga_25 poseDetect_pm_org/vga_25 $startIdx $startEnd
+# # ./vga_merger_arg.sh $saveFolder/${datasetName}/body_mpm heatmaps_org/vga_25 poseDetect_mpm_org/vga_25 $startIdx $startEnd &
+# # echo "" > $saveFolder/$datasetName/done_pose_org.log
+
+
+
+
+
+rawFolder=/media/posefs5a/Captures/SocialGames
+datasetName=160226_ultimatum1
+
+# saveFolder=/media/posefs11b/Processed/specialEvents
+mkdir -p $saveFolder
+startIdx=3698;
+startEnd=3700;
+./peakdetect_hd_raw_arg.sh $rawFolder/$datasetName $saveFolder/${datasetName}/body_mpm $startIdx $startEnd
+echo ./hd_merger_arg.sh $saveFolder/$datasetName heatmaps_org/hd_30 poseDetect_pm_org/hd_30 $startIdx $startEnd
+./hd_merger_arg.sh $saveFolder/${datasetName}/body_mpm heatmaps_org/hd_30 poseDetect_mpm_org/hd_30 $startIdx $startEnd
+echo "" > $saveFolder/$datasetName/done_pose_hd_org.log

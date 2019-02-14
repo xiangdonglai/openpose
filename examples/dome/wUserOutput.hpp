@@ -5,16 +5,18 @@
 // OpenPose dependencies
 #include <openpose/headers.hpp>
 // Other files
-// #include "frameExtractUtil.cpp"
 #include "domeDatum.hpp"
+#include <sys/types.h> // mkdir
+#include <sys/stat.h> // mkdir
 
 // This worker will just read and return all the basic image file formats in a directory
 class WUserOutput : public op::WorkerConsumer<std::shared_ptr<std::vector<std::shared_ptr<DomeDatum>>>>
 {
 public:
-    WUserOutput(const op::PoseModel poseModel, const std::string writeTxt) :
+    WUserOutput(const op::PoseModel poseModel, const std::string& writeTxt, const bool isHd) :
         mNumberBodyParts{op::getPoseNumberBodyParts(poseModel)},
-        mWriteTxt{writeTxt}
+        mWriteTxt{writeTxt},
+        mIsHd{isHd}
     {
         try
         {
@@ -59,8 +61,9 @@ public:
 
                     // Get final file name
                     char filename[256];
+                    const auto baseString = (mIsHd ? "%s/hd%08d_%02d_%02d.txt" : "%s/%08d_%02d_%02d.txt");
                     sprintf(
-                        filename, "%s/%08d_%02d_%02d.txt",
+                        filename, baseString,
                         save_subFolder, (int)datumPtr->frameNumber, datumPtr->panelIdx, datumPtr->camIdx);
 
                     // Save final file
@@ -98,6 +101,7 @@ public:
 private:
     const unsigned int mNumberBodyParts;
     const std::string mWriteTxt;
+    const bool mIsHd;
 };
 
 #endif // OPENPOSE_EXAMPLES_DOME_W_USER_OUTPUT_HPP
