@@ -1,5 +1,5 @@
-if [ "$#" -ne 5 ]; then
-  echo "Usage: $0 mainPath peakFolder outputFolder frameStart frameEnd" >&2
+if [ "$#" -ne 6 ]; then
+  echo "Usage: $0 mainPath peakFolder outputFolder frameStart frameEnd numberBodyParts" >&2
   echo "Usage: $0 /posefs5b/Processed/SocialGames/160422_ultimatum heatmaps_org/vga_25 poseDetect_pm_org 50 100" >&2
   exit 1
 fi
@@ -8,6 +8,7 @@ inputPath=$2
 outputPath=$3
 frameStart=$4
 frameEnd=$5
+numberBodyParts=$6
 
 interval=`expr $frameEnd - $frameStart`
 interval=`expr $interval + 1`
@@ -25,8 +26,8 @@ mid3=`expr $mid2 + $interval`
 
 echo $frameStart $mid1 $mid2 $frameEnd
 mkdir -pv $mainPath/$outputPath
-# echo ../build/examples/rtpose/poseResultMerger.bin $mainPath/$inputPath $mainPath/$outputPath $frameStart $frameEnd
-build/examples/rtpose/poseResultMerger.bin $mainPath/$inputPath $mainPath/$outputPath $frameStart $frameEnd
-#parallel -j4 --xapply ../build/examples/rtpose/poseResultMerger.bin $mainPath/$inputPath $mainPath/$outputPath {1} {2} ::: $frameStart $mid1 $mid2 $mid3 ::: $mid1 $mid2 $mid3 $frameEnd
+# echo ../build/examples/dome/poseResultMerger.bin $mainPath/$inputPath $mainPath/$outputPath $frameStart $frameEnd
+build/examples/dome/poseResultMerger.bin $mainPath/$inputPath $mainPath/$outputPath $frameStart $frameEnd $numberBodyParts
+#parallel -j4 --xapply ../build/examples/dome/poseResultMerger.bin $mainPath/$inputPath $mainPath/$outputPath {1} {2} ::: $frameStart $mid1 $mid2 $mid3 ::: $mid1 $mid2 $mid3 $frameEnd
 echo "" > $mainPath/done_pose_org.log
 exit;

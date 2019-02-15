@@ -6,13 +6,12 @@
 #include <sys/stat.h>
 using namespace std;
 
-
 int main(int argc, char** argv)
 {
     printf("PoseResultMerger_hd\n");
-    if(argc!=5)
+    if (argc != 6)
     {
-        printf("Usage: poseResultMerger.sh inputFolder outputFolder frameStart frameEnd\n");
+        printf("Usage: poseResultMerger.sh inputFolder outputFolder frameStart frameEnd numberBodyParts\n");
         return -1;
     }
     const char* input_folder = argv[1];//"/media/posefs1b/Users/hanbyulj";
@@ -21,11 +20,13 @@ int main(int argc, char** argv)
     mkdir(output_folder,755);
     int startIdx = atoi(argv[3]);//1000;
     int endIdx = atoi(argv[4]);//1000;
+    int numberBodyParts = atoi(argv[5]);//1000;
 
 
     printf("## inputFolder: %s\n",input_folder);
     printf("## oututFolder: %s\n",output_folder);
     printf("## frames: %d -> %d\n",startIdx,endIdx);
+    printf("## numberBodyParts: %d\n",numberBodyParts);
 
      
 
@@ -74,15 +75,15 @@ int main(int argc, char** argv)
                 if(fin.is_open()==false)
                     continue;
 
-                printf("fileName: %s\n",filename);
+                // printf("fileName: %s\n",filename);
                 int peopleNum;//,memSize;
                 fin.read((char*)&peopleNum,sizeof(int));
                 //peopleNum = memSize /42;
                 printf("peopleNum: %d\n",peopleNum);
-                int memSize = 18*3*peopleNum;
+                int memSize = numberBodyParts*3*peopleNum;
                 
                 fin.read((char*)buf,sizeof(float)*memSize);
-                fout <<f <<" " << p << " " <<c << " "<< peopleNum << " " <<18 <<"\n";
+                fout <<f <<" " << p << " " <<c << " "<< peopleNum << " " <<numberBodyParts <<"\n";
                 for(int h=0;h<peopleNum;++h)
                 {
                     for(int j=0;j<54;++j)

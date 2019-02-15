@@ -1,5 +1,5 @@
 #if [ "$#" -ne 5 ]; then
-#	echo "Usage: $0 rawFolder saveFolder frameStartIdx frameEnd camNum"
+#	echo "Usage: $0 rawFolder saveFolder frameStartIdx frameEnd modelPose camNum"
 #	echo "e.g., $0 /media/posefs5a/Captures/SocialGames/160422_ultimatum1 /media/posefs5b/Processed/SocialGames/160422_ultimatum1 100 500 140"
 #	exit 1;
 #fi
@@ -10,7 +10,8 @@ mainPath=$2
 savePath="heatmaps_org/hd_30"
 frameStart=$3
 frameEnd=$4
-#camSamplingNum=$5
+modelPose=$5
+#camSamplingNum=$6
 
 echo "::Processing: rawDataPath: $rawMainPath"
 echo "::Processing: saveMainPath: $mainPath"
@@ -24,4 +25,4 @@ mkdir -p $mainPath/$savePath
 # build/examples/rtpose/rtpose_han_hd.bin --rawDir $rawMainPath --num_gpu 4 --logtostderr --write_txt $mainPath/$savePath --num_scales 3 --scale_gap 0.15 --frame_first $frameStart --frame_last $frameEnd --num_gpu_start 0 --cam_start 0 --cam_end 30 $mainPath/$savePath #--output_resolution 1920x1080
 # #parallel -j4 --xapply build/examples/dome/1_dome_input_and_output.bin --rawDir $rawMainPath --num_gpu 1 --logtostderr --write_txt $mainPath/$savePath --output_resolution 640x480 --num_scales 3 --scale_gap 0.15 --frame_first $frameStart --frame_last $frameEnd --num_gpu_start {1} --panel_start {2} --panel_end {3} --num_gpu_start {1} --cam_sampleNum $camSamplingNum ::: 0 1 2 3 ::: 1 6 11 16 ::: 5 10 15 20
 
-build/examples/dome/1_dome_input_and_output.bin --dome_mode 2 --model_pose COCO --display -1 --num_gpu -1 --num_gpu_start 3 --rawDir $rawMainPath --write_txt $mainPath/$savePath --scale_number 3 --scale_gap 0.15 --frame_first $frameStart --frame_last $frameEnd --cam_start 0 --cam_end 30
+build/examples/dome/1_dome_input_and_output.bin --dome_mode 2 --model_pose $modelPose --display -1 --num_gpu -1 --num_gpu_start 3 --rawDir $rawMainPath --write_txt $mainPath/$savePath --scale_number 3 --scale_gap 0.15 --frame_first $frameStart --frame_last $frameEnd --cam_start 0 --cam_end 30

@@ -1,5 +1,5 @@
-if [ "$#" -ne 5 ]; then
-	echo "Usage: $0 rawFolder saveFolder frameStartIdx frameEnd camNum"
+if [ "$#" -ne 6 ]; then
+	echo "Usage: $0 rawFolder saveFolder frameStartIdx frameEnd modelPose camNum"
 	echo "e.g., $0 /media/posefs5a/Captures/SocialGames/160422_ultimatum1 /media/posefs5b/Processed/SocialGames/160422_ultimatum1 100 500 140"
 	exit 1;
 fi
@@ -10,7 +10,8 @@ mainPath=$2
 savePath="heatmaps_org/vga_25"
 frameStart=$3
 frameEnd=$4
-camSamplingNum=$5
+modelPose=$5
+camSamplingNum=$6
 
 echo "::Processing: rawDataPath: $rawMainPath"
 echo "::Processing: saveMainPath: $mainPath"
@@ -23,4 +24,5 @@ mkdir -p $mainPath/$savePath
 #build/examples/dome/1_dome_input_and_output.bin --model_pose COCO --rawDir $rawMainPath --num_gpu 1 --logtostderr --write_txt $mainPath/$savePath --output_resolution 640x480 --scale_number 3 --scale_gap 0.15 --frame_first $frameStart --frame_last $frameEnd --num_gpu_start 3 --panel_start 1 --panel_end 20 --cam_sampleNum $camSamplingNum
 #build/examples/dome/1_dome_input_and_output.bin --model_pose COCO --rawDir $rawMainPath --num_gpu -1 --logtostderr --write_txt $mainPath/$savePath --output_resolution 640x480 --scale_number 3 --scale_gap 0.15 --frame_first $frameStart --frame_last $frameEnd --num_gpu_start 1 --panel_start 1 --panel_end 20 --cam_sampleNum $camSamplingNum
 # build/examples/dome/1_dome_input_and_output.bin --model_pose COCO --rawDir $rawMainPath --num_gpu -1 --logtostderr --write_txt $mainPath/$savePath --output_resolution 640x480 --scale_number 3 --scale_gap 0.15 --frame_first $frameStart --frame_last $frameEnd --num_gpu_start 1 --panel_start 1 --panel_end 20 --cam_sampleNum $camSamplingNum
-build/examples/dome/1_dome_input_and_output.bin --dome_mode 1 --model_pose COCO --display -1 --num_gpu -1 --num_gpu_start 3 --rawDir $rawMainPath --write_txt $mainPath/$savePath --scale_number 3 --scale_gap 0.15 --frame_first $frameStart --frame_last $frameEnd --panel_start 1 --panel_end 20 --cam_sampleNum $camSamplingNum
+
+build/examples/dome/1_dome_input_and_output.bin --dome_mode 1 --model_pose $modelPose --display -1 --num_gpu -1 --num_gpu_start 3 --rawDir $rawMainPath --write_txt $mainPath/$savePath --scale_number 3 --scale_gap 0.15 --frame_first $frameStart --frame_last $frameEnd --panel_start 1 --panel_end 20 --cam_sampleNum $camSamplingNum
