@@ -32,8 +32,8 @@ datasetName=160226_ultimatum1
 mkdir -p $saveFolder
 startIdx=4698;
 startEnd=4700;
-# camNum=480;
-camNum=10;
+camNum=480;
+# camNum=10;
 ./peakdetect_vga_raw_arg.sh $rawFolder/$datasetName $saveFolder/${datasetName}/body_mpm $startIdx $startEnd BODY_25B $camNum
 echo ./vga_merger_arg.sh $saveFolder/${datasetName}/body_mpm heatmaps_org/vga_25 poseDetect_mpm_org/vga_25 $startIdx $startEnd 25
 ./vga_merger_arg.sh $saveFolder/${datasetName}/body_mpm heatmaps_org/vga_25 poseDetect_mpm_org/vga_25 $startIdx $startEnd 25

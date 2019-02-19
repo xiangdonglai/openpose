@@ -95,7 +95,8 @@ void configureWrapper(op::WrapperT<DomeDatum>& opWrapperT)
         else
             op::error("Unknown `--dome_mode`.", __LINE__, __FUNCTION__, __FILE__);
         // GUI (Display)
-        auto wUserOutput = std::make_shared<WUserOutput>(poseModel, FLAGS_write_txt, FLAGS_dome_mode);
+        const bool isHd = (FLAGS_dome_mode == 2);
+        auto wUserOutput = std::make_shared<WUserOutput>(poseModel, FLAGS_write_txt, isHd);
 
         // Add custom input
         const auto workerInputOnNewThread = false;
