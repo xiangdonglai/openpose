@@ -10,6 +10,7 @@
 #include <openpose/wrapper/wrapperStructInput.hpp>
 #include <openpose/wrapper/wrapperStructOutput.hpp>
 #include <openpose/wrapper/wrapperStructPose.hpp>
+#include <openpose/wrapper/wrapperStructTracking.hpp>
 
 namespace op
 {
@@ -58,8 +59,9 @@ namespace op
         ThreadManager<TDatumsSP>& threadManager, const bool multiThreadEnabled,
         const ThreadManagerMode threadManagerMode, const WrapperStructPose& wrapperStructPose,
         const WrapperStructFace& wrapperStructFace, const WrapperStructHand& wrapperStructHand,
-        const WrapperStructExtra& wrapperStructExtra, const WrapperStructInput& wrapperStructInput,
-        const WrapperStructOutput& wrapperStructOutput, const WrapperStructGui& wrapperStructGui,
+        const WrapperStructTracking& wrapperStructTracking, const WrapperStructExtra& wrapperStructExtra,
+        const WrapperStructInput& wrapperStructInput, const WrapperStructOutput& wrapperStructOutput,
+        const WrapperStructGui& wrapperStructGui,
         const std::array<std::vector<TWorker>, int(WorkerType::Size)>& userWs,
         const std::array<bool, int(WorkerType::Size)>& userWsOnNewThread);
 }
@@ -88,8 +90,9 @@ namespace op
         ThreadManager<TDatumsSP>& threadManager, const bool multiThreadEnabledTemp,
         const ThreadManagerMode threadManagerMode, const WrapperStructPose& wrapperStructPoseTemp,
         const WrapperStructFace& wrapperStructFace, const WrapperStructHand& wrapperStructHand,
-        const WrapperStructExtra& wrapperStructExtra, const WrapperStructInput& wrapperStructInput,
-        const WrapperStructOutput& wrapperStructOutput, const WrapperStructGui& wrapperStructGui,
+        const WrapperStructTracking& wrapperStructTracking, const WrapperStructExtra& wrapperStructExtra,
+        const WrapperStructInput& wrapperStructInput, const WrapperStructOutput& wrapperStructOutput,
+        const WrapperStructGui& wrapperStructGui,
         const std::array<std::vector<TWorker>, int(WorkerType::Size)>& userWs,
         const std::array<bool, int(WorkerType::Size)>& userWsOnNewThread)
     {
@@ -263,14 +266,30 @@ namespace op
                 {
                     // Pose estimators
                     for (auto gpuId = 0; gpuId < numberThreads; gpuId++)
-                        poseExtractorNets.emplace_back(std::make_shared<PoseExtractorCaffe>(
-                            wrapperStructPose.poseModel, modelFolder, gpuId + gpuNumberStart,
-                            wrapperStructPose.heatMapTypes, wrapperStructPose.heatMapScaleMode,
-                            wrapperStructPose.addPartCandidates, wrapperStructPose.maximizePositives,
-                            wrapperStructPose.protoTxtPath, wrapperStructPose.caffeModelPath,
-                            wrapperStructPose.upsamplingRatio, wrapperStructPose.poseMode == PoseMode::Enabled,
-                            wrapperStructPose.enableGoogleLogging
-                        ));
+                    {
+                        if (wrapperStructTracking.tracking > -1)
+                        {
+                            poseExtractorNets.emplace_back(std::make_shared<PoseExtractorCaffeStaf>(
+                                wrapperStructPose.poseModel, modelFolder, gpuId + gpuNumberStart,
+                                wrapperStructPose.heatMapTypes, wrapperStructPose.heatMapScaleMode,
+                                wrapperStructPose.addPartCandidates, wrapperStructPose.maximizePositives,
+                                wrapperStructPose.protoTxtPath, wrapperStructPose.caffeModelPath,
+                                wrapperStructPose.upsamplingRatio, wrapperStructPose.poseMode == PoseMode::Enabled,
+                                wrapperStructPose.enableGoogleLogging
+                            ));
+                        }
+                        else
+                        {
+                            poseExtractorNets.emplace_back(std::make_shared<PoseExtractorCaffe>(
+                                wrapperStructPose.poseModel, modelFolder, gpuId + gpuNumberStart,
+                                wrapperStructPose.heatMapTypes, wrapperStructPose.heatMapScaleMode,
+                                wrapperStructPose.addPartCandidates, wrapperStructPose.maximizePositives,
+                                wrapperStructPose.protoTxtPath, wrapperStructPose.caffeModelPath,
+                                wrapperStructPose.upsamplingRatio, wrapperStructPose.poseMode == PoseMode::Enabled,
+                                wrapperStructPose.enableGoogleLogging
+                            ));
+                        }
+                    }
 
                     // Pose renderers
                     if (renderOutputGpu || wrapperStructPose.renderMode == RenderMode::Cpu)
