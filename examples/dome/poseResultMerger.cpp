@@ -28,7 +28,7 @@ int main(int argc, char** argv)
     printf("## frames: %d -> %d\n",startIdx,endIdx);
     printf("## numberBodyParts: %d\n",numberBodyParts);
 
-     
+
 
     for(int f=startIdx;f<=endIdx;++f)
     {
@@ -42,17 +42,16 @@ int main(int argc, char** argv)
             test.close();
             continue;
         }
-        float buf[100*42];      //maximum 100 people
+        float buf[100*3*25];      //maximum 100 people
         ofstream fout(outputFile);
         fout << "ver 0.5\n";
 
-        //count valid views
-        int viewCnt=0;  
+        // Count valid views
+        int viewCnt=0;
         for(int p=1;p<=20;++p)
         {
             for(int c=1;c<=24;++c)
             {
-
                 char filename[512];
 
                 sprintf(filename,"%s/%03dXX/%08d/%08d_%02d_%02d.txt",input_folder,int(f/100),f,f,p,c);
@@ -61,17 +60,17 @@ int main(int argc, char** argv)
                     continue;
                 viewCnt++;
                 fin.close();
-                
             }
         }
 
         printf("%s: Frame: %d :: numViews: %d\n",input_folder,f,viewCnt);
         fout << "processedViews " <<viewCnt<<"\n";
+        const int personArea = 3*numberBodyParts;
+        std::cout << "peopleNum: ";
         for(int p=1;p<=20;++p)
         {
             for(int c=1;c<=24;++c)
             {
-
                 char filename[512];
 
                 sprintf(filename,"%s/%03dXX/%08d/%08d_%02d_%02d.txt",input_folder,int(f/100),f,f,p,c);
@@ -81,26 +80,25 @@ int main(int argc, char** argv)
                     continue;
 
                 // printf("fileName: %s\n",filename);
-                int peopleNum;//,memSize;
+                int peopleNum;//,memoryVolume;
                 fin.read((char*)&peopleNum,sizeof(int));
-                //peopleNum = memSize /42;
-                printf("peopleNum: %d\n",peopleNum);
-                int memSize = numberBodyParts*3*peopleNum;
-                
-                fin.read((char*)buf,sizeof(float)*memSize);
+                // printf("peopleNum: %d\n",peopleNum);
+                std::cout << peopleNum << " ";
+                const int memoryVolume = peopleNum*personArea;
+
+                fin.read((char*)buf,sizeof(float)*memoryVolume);
                 fout <<f <<" " << p << " " <<c << " "<< peopleNum << " " <<numberBodyParts <<"\n";
                 for(int h=0;h<peopleNum;++h)
                 {
-                    for(int j=0;j<54;++j)
-                        fout << buf[54*h+j] << " ";
+                    for(int j=0;j<personArea;++j)
+                        fout << buf[personArea*h+j] << " ";
                     fout << "\n";
                 }
-                
                 fin.close();
-                
             }
         }
         fout.close();
+        std::cout << std::endl;
     }
 
 /*
