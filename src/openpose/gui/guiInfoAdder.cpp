@@ -136,8 +136,8 @@ namespace op
             // Recording inverse: sec/gpu
             // std::snprintf(charArrayAux, 15, "%4.2f s/gpu", (mFps != 0. ? mNumberGpus/mFps : 0.));
             putTextOnCvMat(
-                cvOutputData, charArrayAux, {positiveIntRound(cvOutputData.cols - borderMargin), borderMargin},
-                WHITE_SCALAR, true, cvOutputData.cols);
+                cvOutputData, charArrayAux, {positiveIntRound(cvOutputData.cols - borderMargin*2.0), borderMargin*2.0},
+                WHITE_SCALAR, true, cvOutputData.cols*3.0);
             // Part to show
             // Allowing some buffer when changing the part to show (if >= 2 GPUs)
             // I.e. one GPU might return a previous part after the other GPU returns the new desired part, it looks
@@ -154,17 +154,20 @@ namespace op
             // Add each person ID
             addPeopleIds(cvOutputData, poseIds, poseKeypoints, borderMargin);
             // OpenPose name as well as help or part to show
-            putTextOnCvMat(cvOutputData, "OpenPose - " +
-                           (!mLastElementRenderedName.empty() ?
-                                mLastElementRenderedName : (mGuiEnabled ? "'h' for help" : "")),
-                           {borderMargin, borderMargin}, WHITE_SCALAR, false, cvOutputData.cols);
-            // Frame number
-            putTextOnCvMat(cvOutputData, "Frame: " + std::to_string(frameNumber),
-                           {borderMargin, (int)(cvOutputData.rows - borderMargin)}, WHITE_SCALAR, false, cvOutputData.cols);
-            // Number people
-            putTextOnCvMat(cvOutputData, "People: " + std::to_string(numberPeople),
-                           {(int)(cvOutputData.cols - borderMargin), (int)(cvOutputData.rows - borderMargin)},
-                           WHITE_SCALAR, true, cvOutputData.cols);
+            putTextOnCvMat(cvOutputData, "OpenPose",
+            // putTextOnCvMat(cvOutputData, "Our Work",
+                           {borderMargin*2.0, borderMargin*2.0}, WHITE_SCALAR, false, cvOutputData.cols*3.0);
+            // putTextOnCvMat(cvOutputData, "OpenPose - " +
+            //                (!mLastElementRenderedName.empty() ?
+            //                     mLastElementRenderedName : (mGuiEnabled ? "'h' for help" : "")),
+            //                {borderMargin, borderMargin}, WHITE_SCALAR, false, cvOutputData.cols);
+            // // Frame number
+            // putTextOnCvMat(cvOutputData, "Frame: " + std::to_string(frameNumber),
+            //                {borderMargin, (int)(cvOutputData.rows - borderMargin)}, WHITE_SCALAR, false, cvOutputData.cols);
+            // // Number people
+            // putTextOnCvMat(cvOutputData, "People: " + std::to_string(numberPeople),
+            //                {(int)(cvOutputData.cols - borderMargin), (int)(cvOutputData.rows - borderMargin)},
+            //                WHITE_SCALAR, true, cvOutputData.cols);
         }
         catch (const std::exception& e)
         {

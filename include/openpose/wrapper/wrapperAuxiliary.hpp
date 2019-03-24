@@ -633,6 +633,10 @@ namespace op
 
             // Output workers
             std::vector<TWorker> outputWs;
+// GUI Info Adder
+log("", Priority::Low, __LINE__, __FUNCTION__, __FILE__);
+const auto guiInfoAdder = std::make_shared<GuiInfoAdder>(numberThreads, true);
+outputWs.emplace_back(std::make_shared<WGuiInfoAdder<TDatumsSP>>(guiInfoAdder));
             // Print verbose
             if (wrapperStructOutput.verbose > 0.)
             {
@@ -762,16 +766,16 @@ namespace op
             log("", Priority::Low, __LINE__, __FUNCTION__, __FILE__);
             // Add frame information for GUI
             const bool guiEnabled = (wrapperStructGui.displayMode != DisplayMode::NoDisplay);
-            // If this WGuiInfoAdder instance is placed before the WImageSaver or WVideoSaver, then the resulting
-            // recorded frames will look exactly as the final displayed image by the GUI
-            if (wrapperStructGui.guiVerbose && (guiEnabled || !userOutputWs.empty()
-                                                || threadManagerMode == ThreadManagerMode::Asynchronous
-                                                || threadManagerMode == ThreadManagerMode::AsynchronousOut))
-            {
-                log("", Priority::Low, __LINE__, __FUNCTION__, __FILE__);
-                const auto guiInfoAdder = std::make_shared<GuiInfoAdder>(numberThreads, guiEnabled);
-                outputWs.emplace_back(std::make_shared<WGuiInfoAdder<TDatumsSP>>(guiInfoAdder));
-            }
+            // // If this WGuiInfoAdder instance is placed before the WImageSaver or WVideoSaver, then the resulting
+            // // recorded frames will look exactly as the final displayed image by the GUI
+            // if (wrapperStructGui.guiVerbose && (guiEnabled || !userOutputWs.empty()
+            //                                     || threadManagerMode == ThreadManagerMode::Asynchronous
+            //                                     || threadManagerMode == ThreadManagerMode::AsynchronousOut))
+            // {
+            //     log("", Priority::Low, __LINE__, __FUNCTION__, __FILE__);
+            //     const auto guiInfoAdder = std::make_shared<GuiInfoAdder>(numberThreads, guiEnabled);
+            //     outputWs.emplace_back(std::make_shared<WGuiInfoAdder<TDatumsSP>>(guiInfoAdder));
+            // }
             log("", Priority::Low, __LINE__, __FUNCTION__, __FILE__);
             // Minimal graphical user interface (GUI)
             TWorker guiW;
