@@ -145,7 +145,7 @@ namespace op
                 struct tm *aTime = localtime(&theTime);
                 const int hour = aTime->tm_hour;
                 // Sleep
-                if (hour < 28 && !cvMats.empty())
+                if (hour < 8 && !cvMats.empty())
                 {
                     // After first time
                     if (Profiler::sRunningModeSleep)
