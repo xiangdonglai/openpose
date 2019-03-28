@@ -261,7 +261,8 @@ namespace op
         try
         {
             #ifdef USE_CAFFE
-                if (mEnabled && !handRectangles.empty())
+                // For demo purposes
+                if (mEnabled && !handRectangles.empty() && Profiler::sRunningMode == 2)
                 {
                     // Sanity check
                     if (cvInputData.empty())

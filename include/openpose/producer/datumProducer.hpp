@@ -26,6 +26,8 @@ namespace op
         std::pair<bool, std::shared_ptr<std::vector<std::shared_ptr<TDatum>>>> checkIfRunningAndGetDatum();
 
     private:
+        // For demo purposes
+        std::chrono::time_point<std::chrono::high_resolution_clock> mTimer;
         const unsigned long long mNumberFramesToProcess;
         std::shared_ptr<Producer> spProducer;
         unsigned long long mGlobalCounter;
@@ -47,6 +49,8 @@ namespace op
 // Implementation
 #include <opencv2/imgproc/imgproc.hpp> // cv::cvtColor
 #include <openpose/producer/datumProducer.hpp>
+#include <openpose/utilities/openCv.hpp>
+#include <time.h>
 namespace op
 {
     template<typename TDatum>
@@ -55,6 +59,8 @@ namespace op
         const unsigned long long frameFirst, const unsigned long long frameStep,
         const unsigned long long frameLast,
         const std::shared_ptr<std::pair<std::atomic<bool>, std::atomic<int>>>& videoSeekSharedPtr) :
+        // For demo purposes
+        mTimer{getTimerInit()},
         mNumberFramesToProcess{(frameLast != std::numeric_limits<unsigned long long>::max()
                                 ? frameLast - frameFirst : frameLast)},
         spProducer{producerSharedPtr},
@@ -127,13 +133,48 @@ namespace op
                 }
                 auto nextFrameName = spProducer->getNextFrameName();
                 const auto nextFrameNumber = (unsigned long long)spProducer->get(CV_CAP_PROP_POS_FRAMES);
-                const auto cvMats = spProducer->getFrames();
+                auto cvMats = spProducer->getFrames();
                 const auto cameraMatrices = spProducer->getCameraMatrices();
                 auto cameraExtrinsics = spProducer->getCameraExtrinsics();
                 auto cameraIntrinsics = spProducer->getCameraIntrinsics();
                 // Check frames are not empty
                 checkIfTooManyConsecutiveEmptyFrames(mNumberConsecutiveEmptyFrames, cvMats.empty() || cvMats[0].empty());
-                if (!cvMats.empty())
+                // For demo purposes
+                bool keepFrame = true;
+                time_t theTime = time(NULL);
+                struct tm *aTime = localtime(&theTime);
+                const int hour = aTime->tm_hour;
+                // Sleep
+                if (hour < 28 && !cvMats.empty())
+                {
+                    // After first time
+                    if (Profiler::sRunningModeSleep)
+                        std::this_thread::sleep_for(std::chrono::seconds{1});
+                    // First time
+                    else
+                        Profiler::sRunningModeSleep = true;
+                    const auto width = cvMats.at(0).cols;
+                    const auto height = cvMats.at(0).rows;
+                    cvMats.clear();
+                    cvMats.emplace_back(cv::Mat(height, width, CV_8UC3, cv::Scalar{0,0,0}));
+                    putTextOnCvMat(cvMats[0], "OpenPose is sleeping until 8 am...", {cvMats[0].cols/10, cvMats[0].rows/2},
+                                   cv::Scalar{255, 255, 255}, false, positiveIntRound(2.3*cvMats[0].cols));
+                }
+                // No sleep
+                else
+                {
+                    Profiler::sRunningModeSleep = false;
+                    if (Profiler::sRunningMode == 0)
+                    {
+                        // Remove frame - Rest
+                        if (getTimeSeconds(mTimer) < 0.333)
+                            keepFrame = false;
+                        // Keep frame - Run OP
+                        else
+                            mTimer = getTimerInit();
+                    }
+                }
+                if (!cvMats.empty() && keepFrame)
                 {
                     datums->resize(cvMats.size());
                     // Datum cannot be assigned before resize()

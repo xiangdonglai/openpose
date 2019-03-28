@@ -123,6 +123,19 @@ namespace op
     {
         try
         {
+            // For demo purposes
+            std::string message;
+            auto fps = mFps;
+            if (Profiler::sRunningMode == 0)
+            {
+                message = "Saving mode activated";
+                fps = 1;
+            }
+            else if (Profiler::sRunningMode == 1)
+                message = "Body only";
+            else if (Profiler::sRunningMode == 2)
+                message = "Body, face, and hands";
+
             // Sanity check
             if (cvOutputData.empty())
                 error("Wrong input element (empty cvOutputData).", __LINE__, __FUNCTION__, __FILE__);
@@ -132,7 +145,8 @@ namespace op
             updateFps(mLastId, mFps, mFpsCounter, mFpsQueue, id, mNumberGpus);
             // Fps or s/gpu
             char charArrayAux[15];
-            std::snprintf(charArrayAux, 15, "%4.1f fps", mFps);
+            // std::snprintf(charArrayAux, 15, "%4.1f fps", mFps);
+            std::snprintf(charArrayAux, 15, "%4.1f fps", fps);
             // Recording inverse: sec/gpu
             // std::snprintf(charArrayAux, 15, "%4.2f s/gpu", (mFps != 0. ? mNumberGpus/mFps : 0.));
             putTextOnCvMat(
@@ -153,13 +167,24 @@ namespace op
             mLastElementRenderedCounter++;
             // Add each person ID
             addPeopleIds(cvOutputData, poseIds, poseKeypoints, borderMargin);
+            // // OpenPose name as well as help or part to show
+            // putTextOnCvMat(cvOutputData, "OpenPose - " +
+            //                (!mLastElementRenderedName.empty() ?
+            //                     mLastElementRenderedName : (mGuiEnabled ? "'h' for help" : "")),
+            //                {borderMargin, borderMargin}, WHITE_SCALAR, false, cvOutputData.cols);
+            // // Frame number
+            // putTextOnCvMat(cvOutputData, "Frame: " + std::to_string(frameNumber),
+            //                {borderMargin, (int)(cvOutputData.rows - borderMargin)}, WHITE_SCALAR, false, cvOutputData.cols);
+            // // Number people
+            // putTextOnCvMat(cvOutputData, "People: " + std::to_string(numberPeople),
+            //                {(int)(cvOutputData.cols - borderMargin), (int)(cvOutputData.rows - borderMargin)},
+            //                WHITE_SCALAR, true, cvOutputData.cols);
             // OpenPose name as well as help or part to show
-            putTextOnCvMat(cvOutputData, "OpenPose - " +
-                           (!mLastElementRenderedName.empty() ?
-                                mLastElementRenderedName : (mGuiEnabled ? "'h' for help" : "")),
+            std::snprintf(charArrayAux, 15, "%4.1f fps", fps);
+            putTextOnCvMat(cvOutputData, "OpenPose - " + message,
                            {borderMargin, borderMargin}, WHITE_SCALAR, false, cvOutputData.cols);
             // Frame number
-            putTextOnCvMat(cvOutputData, "Frame: " + std::to_string(frameNumber),
+            putTextOnCvMat(cvOutputData, "https://github.com/CMU-Perceptual-Computing-Lab/openpose",
                            {borderMargin, (int)(cvOutputData.rows - borderMargin)}, WHITE_SCALAR, false, cvOutputData.cols);
             // Number people
             putTextOnCvMat(cvOutputData, "People: " + std::to_string(numberPeople),

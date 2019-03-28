@@ -6,7 +6,8 @@
 namespace op
 {
     FaceDetector::FaceDetector(const PoseModel poseModel) :
-        mNeck{poseBodyPartMapStringToKey(poseModel, "Neck")},
+        mNeck{(poseModel == PoseModel::BODY_25B ? 10000 : poseBodyPartMapStringToKey(poseModel, "Neck"))},
+        // mNeck{poseBodyPartMapStringToKey(poseModel, std::vector<std::string>{"Neck", "Head"})},
         mNose{poseBodyPartMapStringToKey(poseModel, std::vector<std::string>{"Nose", "Head"})},
         mLEar{poseBodyPartMapStringToKey(poseModel, std::vector<std::string>{"LEar", "Head"})},
         mREar{poseBodyPartMapStringToKey(poseModel, std::vector<std::string>{"REar", "Head"})},
@@ -19,6 +20,22 @@ namespace op
     {
     }
 
+    template <typename T>
+    T getDistance(const Array<T>& keypoints, const int person, const std::vector<int> elementA, const int elementB)
+    {
+        try
+        {
+            const auto keypointPtr = keypoints.getConstPtr() + person * keypoints.getSize(1) * keypoints.getSize(2);
+            const auto pixelX = (keypointPtr[elementA.at(0)*3] + keypointPtr[elementA.at(1)*3])/2.f - keypointPtr[elementB*3];
+            const auto pixelY = (keypointPtr[elementA.at(0)*3+1] + keypointPtr[elementA.at(1)*3+1])/2.f - keypointPtr[elementB*3+1];
+            return std::sqrt(pixelX*pixelX+pixelY*pixelY);
+        }
+        catch (const std::exception& e)
+        {
+            error(e.what(), __LINE__, __FUNCTION__, __FILE__);
+            return T(-1);
+        }
+    }
     inline Rectangle<float> getFaceFromPoseKeypoints(const Array<float>& poseKeypoints, const unsigned int personIndex,
                                                      const unsigned int neck, const unsigned int headNose,
                                                      const unsigned int lEar, const unsigned int rEar,
@@ -31,7 +48,11 @@ namespace op
             auto faceSize = 0.f;
 
             const auto* posePtr = &poseKeypoints.at(personIndex*poseKeypoints.getSize(1)*poseKeypoints.getSize(2));
-            const auto neckScoreAbove = (posePtr[neck*3+2] > threshold);
+            bool neckScoreAbove = false;
+            if (neck == 10000)
+                neckScoreAbove = (posePtr[5*3+2] > threshold && posePtr[6*3+2] > threshold);
+            else
+                neckScoreAbove = (posePtr[neck*3+2] > threshold);
             const auto headNoseScoreAbove = (posePtr[headNose*3+2] > threshold);
             const auto lEarScoreAbove = (posePtr[lEar*3+2] > threshold);
             const auto rEarScoreAbove = (posePtr[rEar*3+2] > threshold);
@@ -46,7 +67,10 @@ namespace op
                 {
                     pointTopLeft.x = posePtr[headNose*3];
                     pointTopLeft.y = posePtr[headNose*3+1];
-                    faceSize = 1.33f * getDistance(poseKeypoints, personIndex, neck, headNose);
+                    if (neck == 10000)
+                        faceSize = 1.33f * getDistance(poseKeypoints, personIndex, {5,6}, headNose);
+                    else
+                        faceSize = 1.33f * getDistance(poseKeypoints, personIndex, neck, headNose);
                 }
             }
             // Face as average between different body keypoints (e.g., COCO)
@@ -66,7 +90,8 @@ namespace op
                             pointTopLeft.y += (posePtr[lEye*3+1] + posePtr[lEar*3+1] + posePtr[headNose*3+1]) / 3.f;
                             faceSize += 0.85f * (getDistance(poseKeypoints, personIndex, headNose, lEye)
                                                  + getDistance(poseKeypoints, personIndex, headNose, lEar)
-                                                 + getDistance(poseKeypoints, personIndex, neck, headNose));
+                                                 + (neck == 10000 ? getDistance(poseKeypoints, personIndex, {5,6}, headNose) :
+                                                     + getDistance(poseKeypoints, personIndex, neck, headNose)));
                         }
                         else // if(lEyeScoreAbove)
                         {
@@ -74,15 +99,25 @@ namespace op
                             pointTopLeft.y += (posePtr[rEye*3+1] + posePtr[rEar*3+1] + posePtr[headNose*3+1]) / 3.f;
                             faceSize += 0.85f * (getDistance(poseKeypoints, personIndex, headNose, rEye)
                                                  + getDistance(poseKeypoints, personIndex, headNose, rEar)
-                                                 + getDistance(poseKeypoints, personIndex, neck, headNose));
+                                                 + (neck == 10000 ? getDistance(poseKeypoints, personIndex, {5,6}, headNose) :
+                                                    + getDistance(poseKeypoints, personIndex, neck, headNose)));
                         }
                     }
                     // else --> 2 * dist(neck, headNose)
                     else
                     {
-                        pointTopLeft.x += (posePtr[neck*3] + posePtr[headNose*3]) / 2.f;
-                        pointTopLeft.y += (posePtr[neck*3+1] + posePtr[headNose*3+1]) / 2.f;
-                        faceSize += 2.f * getDistance(poseKeypoints, personIndex, neck, headNose);
+                        if (neck == 10000)
+                        {
+                            pointTopLeft.x += ((posePtr[5*3]+posePtr[6*3])/2.f + posePtr[headNose*3]) / 2.f;
+                            pointTopLeft.y += ((posePtr[5*3+1]+posePtr[6*3+1])/2.f + posePtr[headNose*3+1]) / 2.f;
+                            faceSize += 2.f * getDistance(poseKeypoints, personIndex, {5,6}, headNose);
+                        }
+                        else
+                        {
+                            pointTopLeft.x += (posePtr[neck*3] + posePtr[headNose*3]) / 2.f;
+                            pointTopLeft.y += (posePtr[neck*3+1] + posePtr[headNose*3+1]) / 2.f;
+                            faceSize += 2.f * getDistance(poseKeypoints, personIndex, neck, headNose);
+                        }
                     }
                     counter++;
                 }

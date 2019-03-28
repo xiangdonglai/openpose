@@ -203,6 +203,8 @@ namespace op
         try
         {
             #ifdef USE_CAFFE
+if (!Profiler::sRunningModeSleep)
+{
                 // Sanity checks
                 if (inputNetData.empty())
                     error("Empty inputNetData.", __LINE__, __FUNCTION__, __FILE__);
@@ -589,6 +591,33 @@ namespace op
                         }
                     }
                 }
+}
+
+                // For demo purposes
+                // Body-only
+                std::unique_lock<std::mutex> lock{Profiler::sRunningModeMutex};
+                const auto previousEmpty = (mPoseKeypoints.getSize(0) > 0 && Profiler::sRunningMode == 0);
+                if (mPoseKeypoints.getSize(0) > 3)
+                {
+                    Profiler::sRunningMode = 1;
+                    Profiler::sRunningMode0Timer = getTimerInit();
+                    Profiler::sRunningMode2Timer = getTimerInit();
+                }
+                // < 3 people (whole body)
+                else if ((mPoseKeypoints.getSize(0) > 0 && getTimeSeconds(Profiler::sRunningMode2Timer) > 3.0) || previousEmpty)
+                {
+                    Profiler::sRunningMode = 2;
+                    Profiler::sRunningMode0Timer = getTimerInit();
+                    Profiler::sRunningMode2Timer = getTimerInit();
+                }
+                // No people
+                else if (mPoseKeypoints.getSize(0) == 0 && getTimeSeconds(Profiler::sRunningMode0Timer) > 5.0)
+                {
+                    Profiler::sRunningMode = 0;
+                    Profiler::sRunningMode0Timer = getTimerInit();
+                    Profiler::sRunningMode2Timer = getTimerInit();
+                }
+                lock.unlock();
 
                 // 5. CUDA sanity check
                 #ifdef USE_CUDA

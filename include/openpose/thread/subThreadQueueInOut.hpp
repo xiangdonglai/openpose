@@ -71,7 +71,7 @@ namespace op
                 {
                     // Pop TDatums
                     if (spTQueueIn->empty())
-                        std::this_thread::sleep_for(std::chrono::microseconds{100});
+                        std::this_thread::sleep_for(Profiler::sRunningModeSleep ? std::chrono::seconds{1} : std::chrono::microseconds{100});
                     TDatums tDatums;
                     bool workersAreRunning = spTQueueIn->tryPop(tDatums);
                     // Check queue not stopped
@@ -95,7 +95,7 @@ namespace op
                 }
                 else
                 {
-                    std::this_thread::sleep_for(std::chrono::microseconds{100});
+                    std::this_thread::sleep_for(Profiler::sRunningModeSleep ? std::chrono::seconds{1} : std::chrono::microseconds{100});
                     return true;
                 }
             }

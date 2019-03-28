@@ -8,6 +8,12 @@
 
 namespace op
 {
+    std::atomic<int> Profiler::sRunningMode{1};
+    std::atomic<bool> Profiler::sRunningModeSleep{false};
+    std::mutex Profiler::sRunningModeMutex{};
+    std::chrono::time_point<std::chrono::high_resolution_clock> Profiler::sRunningMode0Timer{getTimerInit()};
+    std::chrono::time_point<std::chrono::high_resolution_clock> Profiler::sRunningMode2Timer{getTimerInit()};
+
     unsigned long long Profiler::DEFAULT_X = 1000;
 
     std::chrono::time_point<std::chrono::high_resolution_clock> getTimerInit()

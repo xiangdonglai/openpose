@@ -180,6 +180,9 @@ namespace op
             mCloseThread = false;
             while (!mCloseThread)
             {
+// For demo purposes
+if (Profiler::sRunningModeSleep)
+std::this_thread::sleep_for(std::chrono::seconds{1});
                 // Reset camera if disconnected
                 bool cameraConnected = true;
                 if (mDisconnectedCounter > DISCONNETED_THRESHOLD)

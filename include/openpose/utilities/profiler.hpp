@@ -1,7 +1,9 @@
 #ifndef OPENPOSE_UTILITIES_PROFILER_HPP
 #define OPENPOSE_UTILITIES_PROFILER_HPP
 
+#include <atomic>
 #include <chrono>
+#include <mutex>
 #include <string>
 #include <openpose/core/macros.hpp>
 #include <openpose/utilities/enumClasses.hpp>
@@ -29,6 +31,13 @@ namespace op
     class OP_API Profiler
     {
     public:
+        // For demo purposes
+        static std::atomic<int> sRunningMode;
+        static std::atomic<bool> sRunningModeSleep;
+        static std::mutex sRunningModeMutex;
+        static std::chrono::time_point<std::chrono::high_resolution_clock> sRunningMode0Timer;
+        static std::chrono::time_point<std::chrono::high_resolution_clock> sRunningMode2Timer;
+
         static unsigned long long DEFAULT_X;
 
         // Non-thread safe, it must be performed at the beginning of the code before any parallelization occurs

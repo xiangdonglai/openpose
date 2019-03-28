@@ -144,8 +144,11 @@ namespace op
     #define POSE_BODY_25B_PAIRS_RENDER_GPU \
         0,1, 0,2, 1,3, 2,4,   5,7, 6,8,   7,9, 8,10,   5,11, 6,12,   11,13, 12,14,   13,15, 14,16, \
         15,19, 19,20, 15,21,   16,22, 22,23, 16,24,   5,17, \
-        6,17,   17,18,   11,12
-    #define POSE_BODY_25B_SCALES_RENDER_GPU 1
+        6,17,   17,18,   11,12, 5,6
+    #define POSE_BODY_25B_SCALES_RENDER_GPU \
+        1.f,1.f,1.f,1.f,1.f, 1.f,1.f,1.f,1.f,1.f, 1.f,1.f,1.f,1.f,1.f, 1.f,1.f, \
+        0.f,0.f, \
+        1.f,1.f,1.f,1.f,1.f,1.f
     #define POSE_BODY_25B_COLORS_RENDER_GPU \
         255.f,     0.f,    85.f, \
         170.f,     0.f,   255.f, \

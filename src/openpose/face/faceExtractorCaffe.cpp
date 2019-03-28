@@ -177,7 +177,8 @@ namespace op
         try
         {
             #ifdef USE_CAFFE
-                if (mEnabled && !faceRectangles.empty())
+                // For demo purposes
+                if (mEnabled && !faceRectangles.empty() && Profiler::sRunningMode == 2)
                 {
                     // Sanity check
                     if (cvInputData.empty())
