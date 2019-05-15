@@ -14,7 +14,7 @@ OpenPose - Quick Start
 
 
 ## Quick Start
-Check that the library is working properly by running any of the following commands. Make sure that you are in the **root directory of the project** (i.e., in the OpenPose folder, not inside `build/` nor `windows/` nor `bin/`). In addition, `examples/media/video.avi` and `examples/media` do exist, no need to change the paths.
+Check that the library is working properly by running any of the following commands on any command-line interface program. In Ubuntu, Mac, and other Unix systems, use any command-line interface, such as `Terminal` or `Terminator`. In Windows, open the `PowerShell` (recommended) or Windows Command Prompt (CMD). They can be open by pressing the Windows button + X, and then A. Feel free to watch any Youtube video tutorial if you are not familiar with these non-GUI tools. Make sure that you are in the **root directory of the project** (i.e., in the OpenPose folder, not inside `build/` nor `windows/` nor `bin/`). In addition, `examples/media/video.avi` and `examples/media` do exist, no need to change the paths.
 
 ### Running on Video
 ```
@@ -106,6 +106,12 @@ build\x64\Release\OpenPoseDemo.exe --net_resolution "1312x736" --scale_number 4 
 :: Windows - Library - Assuming you copied the DLLs following doc/installation.md#windows: Body + Hand + Face
 build\x64\Release\OpenPoseDemo.exe --net_resolution "1312x736" --scale_number 4 --scale_gap 0.25 --hand --hand_scale_number 6 --hand_scale_range 0.4 --face
 ```
+
+If you want to increase the accuracy value metric on COCO, while harming the qualitative accuracy, add the flag `--maximize_positives`. It reduces the thresholds to accept a person candidate. It highly increases both false and true positives. I.e., it maximizes average recall but could harm average precision. Our experience is that it looks much worse visually, but it improves the COCO accuracy numbers, so use it at your own risk.
+
+In addition, our paper numbers are not based on the current models that have been released. We released our best model at the time but later found a better one. But given that the accuracy difference is less than 2%, we did not want to release yet another model to avoid confusion for the users (otherwise there would be more than 10 models released at this point). We will release a new one every time a major improvement is achieved.
+
+If you are operating on Ubuntu, you can check the experimental scripts that we use to test our accuracy (we do not officially support it, i.e., we will not answer questions about it, as well as it might change it continuously), they are placed in `openpose/scripts/tests/`, called `pose_accuracy_coco_test_dev.sh` and `pose_accuracy_coco_val.sh`.
 
 
 
