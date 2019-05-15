@@ -3,7 +3,7 @@
 // it includes all the OpenPose configuration flags.
 // Input: An image and the face rectangle locations.
 // Output: OpenPose face keypoint detection.
-// NOTE: This demo is auto-selecting the following flags: `--body_disable --face --face_detector 2`
+// NOTE: This demo is auto-selecting the following flags: `--body 0 --face --face_detector 2`
 
 // Command-line user intraface
 #define OPENPOSE_FLAGS_DISABLE_PRODUCER
@@ -135,7 +135,7 @@ void configureWrapper(op::Wrapper& opWrapper)
         // Output (comment or use default argument to disable any output)
         const op::WrapperStructOutput wrapperStructOutput{
             FLAGS_cli_verbose, FLAGS_write_keypoint, op::stringToDataFormat(FLAGS_write_keypoint_format),
-            FLAGS_write_json, FLAGS_write_coco_json, FLAGS_write_coco_foot_json, FLAGS_write_coco_json_variant,
+            FLAGS_write_json, FLAGS_write_coco_json, FLAGS_write_coco_json_variants, FLAGS_write_coco_json_variant,
             FLAGS_write_images, FLAGS_write_images_format, FLAGS_write_video, FLAGS_write_video_fps,
             FLAGS_write_video_with_audio, FLAGS_write_heatmaps, FLAGS_write_heatmaps_format, FLAGS_write_video_3d,
             FLAGS_write_video_adam, FLAGS_write_bvh, FLAGS_udp_host, FLAGS_udp_port};
@@ -202,7 +202,7 @@ int tutorialApiCpp()
 
         // Info
         op::log("NOTE: In addition with the user flags, this demo has auto-selected the following flags:\n"
-                "\t`--body_disable --face --face_detector 2`", op::Priority::High);
+                "\t`--body 0 --face --face_detector 2`", op::Priority::High);
 
         // Measuring total time
         op::printTime(opTimer, "OpenPose demo successfully finished. Total time: ", " seconds.", op::Priority::High);

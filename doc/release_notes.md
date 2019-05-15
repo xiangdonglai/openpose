@@ -261,7 +261,13 @@ OpenPose Library - Release Notes
 ## Current version - future OpenPose 1.5.0
 1. Main improvements:
     1. Added initial single-person tracker for further speed up or visual smoothing (`--tracking` flag).
-    2. Greedy body part connector implemented in CUDA: +~30% speed up in Nvidia (CUDA) version with default flags and +~10% in maximum accuracy configuration. In addition, it provides a small 0.5% boost in accuracy (default flags).
+    2. Speed up of the CUDA functions of OpenPose:
+        1. Greedy body part connector implemented in CUDA: +~30% speedup in Nvidia (CUDA) version with default flags and +~10% in maximum accuracy configuration. In addition, it provides a small 0.5% boost in accuracy (default flags).
+        2. +5-30% additional speedup for the body part connector of point 1.
+        3. About 2-4x speedup for NMS.
+        4. About 2x speedup for image resize and about 2x speedup for multi-scale resize.
+        5. About 25-30% speedup for rendering.
+        6. Reduced latency and increased speed by moving the resize in CvMatToOpOutput and OpOutputToCvMat to CUDA. The linear speedup generalizes better to higher number of GPUs.
     3. Unity binding of OpenPose released. OpenPose adds the flag `BUILD_UNITY_SUPPORT` on CMake, which enables special Unity code so it can be built as a Unity plugin.
     4. If camera is unplugged, OpenPose GUI and command line will display a warning and try to reconnect it.
     5. Wrapper classes simplified and renamed. Wrapper renamed as WrapperT, and created Wrapper as the non-templated class equivalent.
@@ -323,6 +329,11 @@ OpenPose Library - Release Notes
     31. Removed boost::shared_ptr and caffe::Blob dependencies from the headers. No 3rdparty dependencies left on headers (except dim3 for CUDA).
     32. Added Array `poseNetOutput` to Datum so that user can introduce his custom network output.
     33. OpenPose will never provoke a core dumped or crash. Exceptions in threads (`errorWorker()` instead of `error()`) lead to stopping the threads and reporting the error from the main thread, while exceptions in destructors (`errorDestructor()` instead of `error()`) are reported with std::cerr but not thrown as std::exceptions.
+    34. When reading a directory of images, they will be sorted in natural order (rather than regular sort).
+    35. Windows updates:
+        1. Upgraded OpenCV version for Windows from 3.1 to 4.0.1, which provides stable 30 FPS for webcams (vs. 10 FPS that OpenCV 3.1 provides by default on Windows).
+        2. Upgrade VS2015 to VS2017, allowing CUDA 10 and 20XX Nvidia cards.
+    36. Output JSON updated to version 1.3, which now includes the person IDs (if any).
 2. Functions or parameters renamed:
     1. By default, python example `tutorial_developer/python_2_pose_from_heatmaps.py` was using 2 scales starting at -1x736, changed to 1 scale at -1x368.
     2. WrapperStructPose default parameters changed to match those of the OpenPose demo binary.
@@ -339,6 +350,7 @@ OpenPose Library - Release Notes
     11. Moved most sh scripts into the `scripts/` folder. Only models/getModels.sh and the `*.bat` files are kept under `models/` and `3rdparty/windows`.
     12. For Python compatibility and scalability increase, template `TDatums` used for `include/openpose/wrapper/wrapper.hpp` has changed from `std::vector<Datum>` to `std::vector<std::shared_ptr<Datum>>`, including the respective changes in all the worker classes. In addition, some template classes have been simplified to only take 1 template parameter for user simplicity.
     13. Renamed intRound, charRound, etc. by positiveIntRound, positiveCharRound, etc. so that people can realize it is not safe for negative numbers.
+    14. Replaced flag `--write_coco_foot_json` by `--write_coco_json_variants` in order to generalize to any COCO JSON format (i.e., hand, face, etc).
 3. Main bugs fixed:
     1. CMake-GUI was forcing to Release mode, allowed Debug modes too.
     2. NMS returns in index 0 the number of found peaks. However, while the number of peaks was truncated to a maximum of 127, this index 0 was saving the real number instead of the truncated one.
@@ -349,6 +361,7 @@ OpenPose Library - Release Notes
     7. 3D module: If the image area was smaller than HD resolution image area, the 3D keypoints were not properly estimated.
     8. OpenCL fixes.
     9. If manual CUDA architectures are set in CMake, they are also set for Caffe rather than only for OpenPose.
+    10. Fixed flag `--hand_alpha_pose`.
 
 
 
