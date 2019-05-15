@@ -10,6 +10,11 @@ frameStart=$4
 frameEnd=$5
 numberBodyParts=$6
 
+if [ ! -f ${mainPath}/done_peak_detect.log ]; then
+   echo "File ${mainPath}/done_peak_detect.log does not exist."
+   exit 1
+fi
+
 interval=`expr $frameEnd - $frameStart`
 interval=`expr $interval + 1`
 interval=`expr $interval / 4` #interval should 3 for parallel 5
